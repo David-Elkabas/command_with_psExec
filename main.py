@@ -29,7 +29,11 @@ def read_from_csv(csv_file):
             username = row['username']
             password = row['password']
             machine = IpAddress(ip, username, password, executable)
-            result = ps_exec_script(machine)
+            result2 = ps_info_script(machine.ip)
+            if result2:
+                result = ps_exec_script(machine)
+
+
             print(result)
             machine.status = 'good' if result else 'bad'
             machine.time_of_check = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -38,19 +42,24 @@ def read_from_csv(csv_file):
 
 
 def write_to_csv(csv_file, array_of_updated_machines_to_save):
-    fieldnames = ['IP', 'username', 'password', 'status', 'time_of_check']
+    fieldnames = ['ip', 'username', 'password', 'status', 'time_of_check']
     with open(csv_file, 'w', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         for machine in array_of_updated_machines_to_save:
             writer.writerow({
-                'IP': machine.ip,
+                'ip': machine.ip,
                 'username': machine.username,
                 'password': machine.password,
                 'status': machine.status,
                 'time_of_check': machine.time_of_check
             })
+        print("finish saving all the DATA")
 
+
+def ps_info_script(ip)
+    print("help")
+    #get the info about the storage and cpu from the machine
 
 def ps_exec_script(machine):
     c = Client(machine.ip, username=machine.username, password=machine.password,
