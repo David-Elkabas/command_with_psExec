@@ -37,17 +37,27 @@ def read_from_csv(csv_file):
             password = row['password']
             executable = "wmic"  # where the exe that need to be run on the client is locate
             arguments = "cpu get loadpercentage"
+
             machine = IpAddress(ip, username, password, executable, arguments)
 
-            # send the request for the cpu usage and calculate to average of it
-            result = ps_exec_script(machine)
-            if result:
-                array_of_cpu_percentage = get_numbers_from_string(result[0])
+            temp_cpu_array = []
+            x = 0
+            # get three samples of the cpu score and them get the average of them
+            while x < 3:
+                result = ps_exec_script(machine)
+                if result:
+                    array_of_cpu_percentage = get_numbers_from_string(result[0])
+                    x = x + 1
                 # there may be more than one core and therefore we need to calculate the average of them.
-                machine.cpu = given_array_calc_average(array_of_cpu_percentage)
+                    temp_cpu_array.append(given_array_calc_average(array_of_cpu_percentage))
+                else:
+                    x = 3
 
-                #     machine.storage_by_percent = machine_info.storage_by_percent
-                #     machine.storage_by_value = machine_info.storage_by_value
+            print(f"the three cpu percentage calculated are: {temp_cpu_array}")
+            if temp_cpu_array:
+                machine.cpu = given_array_calc_average(temp_cpu_array)
+                # machine.storage_by_percent = machine_info.storage_by_percent
+                # machine.storage_by_value = machine_info.storage_by_value
                 print(f"the cpu of {machine.ip} is {machine.cpu}%")
                 if machine.cpu < 80:  # need to add also the storage data for this section!
                     machine.executable = "whoami.exe"
@@ -106,7 +116,7 @@ def given_array_calc_average(array_of_numbers):
 
 
 def ps_exec_script(machine):
-    print(f"starting to connect to {machine.ip} with the command {machine.executable}")
+    # print(f"starting to connect to {machine.ip} with the command {machine.executable}")
     c = Client(machine.ip, username=machine.username, password=machine.password,
                encrypt=True)
     try:  # try to connect to the ip
